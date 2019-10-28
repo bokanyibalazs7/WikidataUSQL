@@ -1,0 +1,24 @@
+﻿//WikidataImport table creation
+/*
+CREATE TABLE dbo.WikidataImport  
+(
+     [Id] string
+    ,[Type] string
+    ,[Labels] byte[]
+    ,[Descriptions] byte[]
+    ,[Aliases] byte[]
+    ,[Claims] byte[]
+    ,[Sitelinks] byte[]
+    ,INDEX cIX_ID CLUSTERED(Id ASC) DISTRIBUTED BY HASH(Id)
+);
+*/
+
+//SubjPropObj table creation
+
+CREATE TABLE dbo.SubjPropObj  
+(
+     [Subj] string
+    ,[Prop] string
+    ,[Obj] string
+    ,INDEX cIX_ID CLUSTERED(Subj ASC) DISTRIBUTED BY HASH(Subj)
+);

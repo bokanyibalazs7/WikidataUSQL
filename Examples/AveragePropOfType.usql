@@ -23,27 +23,15 @@ SELECT
 FROM @jsonPathResult
 CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
 
-@stmtFilter=
-    SELECT DISTINCT [Obj]
+
+@stmtFilter =
+    SELECT [Subj], Prop
     FROM @jsonPathResultExploded
-    WHERE Prop == "P31"; //instace of
+    WHERE Prop == "P279";
 
-
-
-//This is for sampling
-/*
-@stmtSample=
-    SELECT [Obj]
-    FROM @stmtFilter
-         SAMPLE ANY(100);
-*/
-
-@stmtCount=
-    SELECT
-        COUNT() AS NumType
-    FROM @stmtFilter;
-
-
-OUTPUT @stmtCount
-TO "/wikidata/numof-types-with-instance.csv"
-USING Outputters.Csv(outputHeader:true,quoting:true);
+@countProp =
+    SELECT [Subj],
+           COUNT(DISTINCT Prop) AS DistProps
+    FROM @jsonPathResultExploded
+    GROUP BY Subj
+    HAVING Prop ==

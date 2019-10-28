@@ -21,26 +21,37 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Script Include="ListHumans.usql" />
-    <Script Include="ListTypes.usql" />
-    <Script Include="Script.usql" />
-    <Script Include="TableSample.usql" />
-    <Script Include="TypesWithInstance.usql" />
-    <ScriptCode Include="ListHumans.usql.cs">
-      <DependentUpon>ListHumans.usql</DependentUpon>
+    <Script Include="Examples\AveragePropOfType.usql" />
+    <Script Include="Examples\ListHumans.usql" />
+    <Script Include="Examples\ListTypes.usql" />
+    <Script Include="Examples\Script.usql" />
+    <Script Include="Examples\TableSample.usql" />
+    <Script Include="Examples\TestStatements.usql" />
+    <Script Include="Examples\TypesWithInstance.usql" />
+    <ScriptCode Include="Examples\AveragePropOfType.usql.cs">
+      <DependentUpon>Examples\AveragePropOfType.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="ListTypes.usql.cs">
-      <DependentUpon>ListTypes.usql</DependentUpon>
+    <ScriptCode Include="Examples\ListHumans.usql.cs">
+      <DependentUpon>Examples\ListHumans.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Script.usql.cs">
-      <DependentUpon>Script.usql</DependentUpon>
+    <ScriptCode Include="Examples\ListTypes.usql.cs">
+      <DependentUpon>Examples\ListTypes.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="TableSample.usql.cs">
-      <DependentUpon>TableSample.usql</DependentUpon>
+    <ScriptCode Include="Examples\Script.usql.cs">
+      <DependentUpon>Examples\Script.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="TypesWithInstance.usql.cs">
-      <DependentUpon>TypesWithInstance.usql</DependentUpon>
+    <ScriptCode Include="Examples\TableSample.usql.cs">
+      <DependentUpon>Examples\TableSample.usql</DependentUpon>
     </ScriptCode>
+    <ScriptCode Include="Examples\TestStatements.usql.cs">
+      <DependentUpon>Examples\TestStatements.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\TypesWithInstance.usql.cs">
+      <DependentUpon>Examples\TypesWithInstance.usql</DependentUpon>
+    </ScriptCode>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Examples" />
   </ItemGroup>
   <!-- check for SDK Build target in current path then in USQLSDKPath-->
   <Import Project="UsqlSDKBuild.targets" Condition="Exists('UsqlSDKBuild.targets')" />

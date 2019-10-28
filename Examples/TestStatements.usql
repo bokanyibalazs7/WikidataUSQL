@@ -23,27 +23,12 @@ SELECT
 FROM @jsonPathResult
 CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
 
-@stmtFilter=
-    SELECT DISTINCT [Obj]
-    FROM @jsonPathResultExploded
-    WHERE Prop == "P31"; //instace of
 
+@output=
+    SELECT *
+    FROM @jsonPathResult
+    SAMPLE ANY(5);
 
-
-//This is for sampling
-/*
-@stmtSample=
-    SELECT [Obj]
-    FROM @stmtFilter
-         SAMPLE ANY(100);
-*/
-
-@stmtCount=
-    SELECT
-        COUNT() AS NumType
-    FROM @stmtFilter;
-
-
-OUTPUT @stmtCount
-TO "/wikidata/numof-types-with-instance.csv"
+OUTPUT @output
+TO "/wikidata/statement-test.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);

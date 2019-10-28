@@ -24,7 +24,7 @@ FROM @jsonPathResult
 CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
 
 @stmtFilter =
-    SELECT [Subj]
+    SELECT DISTINCT [Subj]
     FROM @jsonPathResultExploded
     WHERE Prop == "P279";
 

@@ -1,0 +1,78 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@subjPropObj=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+//Everything that we consider as a 'Type' (has subclass of)
+@allTypes=
+    SELECT DISTINCT Subj
+    FROM @subjPropObj
+    WHERE Prop == "P279";
+
+//Everything that has an instance (it is on object in an 'instance of' statement), UNIQUE
+@typesWithInstance=
+    SELECT DISTINCT Obj
+    FROM @subjPropObj
+    WHERE Prop == "P31";
+
+//Real type: it has an instance and we consider it as a 'Type'
+@realTypes=
+    SELECT Subj FROM @allTypes
+    INTERSECT DISTINCT
+    SELECT * FROM @typesWithInstance;
+
+//Everything that has an instance (it is on object in an 'instance of' statement), NOT UNIQUE
+@duplicateWithInstance = 
+    SELECT Obj
+    FROM @subjPropObj
+    WHERE Prop == "P31";
+
+//Filter the duplicated list to show only the 'Real types'
+@joinStmt = 
+    SELECT * FROM @duplicateWithInstance AS dwi
+                  INNER JOIN (SELECT * FROM @realTypes) AS rt
+                  ON dwi.Obj == rt.Subj;
+
+//Count the 'Real Types' occurances
+@countOccurances = 
+    SELECT Subj, COUNT() AS Occurance
+    FROM @joinStmt
+         GROUP BY Subj;
+
+//This little filter calculates the average value
+//Since its result is used directly, it has to be commented out (dead code failure)
+/*
+@AVGoccurance = 
+SELECT AVG(Occurance) AS Average FROM @countOccurances;
+*/
+
+
+
+//Steps to calculate Average, Spread, Minimum and Maximum
+@steptospread = 
+    SELECT Occurance, Math.Pow((double)(Occurance - 1180), 2) AS SecondPower //1180 az @AVGoccurance-ben kijott atlag, nem tudom pontosan hogyan lehetne kinyerni azt is, egyszerubb volt most beegetni
+    FROM @countOccurances;
+
+@spreadMaxMin = 
+    SELECT Math.Sqrt((double)AVG(SecondPower)) AS Spread, MAX(Occurance) AS Maximum, MIN(Occurance) AS Minimum
+    FROM @steptospread;
+
+//Little filter to find which subject has the most instance
+/*
+@maxobject = 
+    SELECT Subj
+    FROM @countOccurances
+    WHERE Occurance == 22641732;
+*/
+
+
+OUTPUT @spreadMaxMin
+TO "/wikidata/spread-max-min.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
