@@ -14,7 +14,7 @@ CREATE TABLE dbo.WikidataImport
 */
 
 //SubjPropObj table creation
-
+/*
 CREATE TABLE dbo.SubjPropObj  
 (
      [Subj] string
@@ -22,3 +22,23 @@ CREATE TABLE dbo.SubjPropObj
     ,[Obj] string
     ,INDEX cIX_ID CLUSTERED(Subj ASC) DISTRIBUTED BY HASH(Subj)
 );
+*/
+
+DROP TABLE IF EXISTS dbo.WikidataPaths;
+CREATE TABLE dbo.WikidataPaths
+( 
+     [LastElement] string
+    ,[CircleFlag] bool
+    ,[Paths] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(LastElement ASC) DISTRIBUTED BY HASH(LastElement)
+);
+
+/*
+DROP TABLE IF EXISTS dbo.TaxTypesAndProperties;
+CREATE TABLE dbo.TaxTypesAndProperties  
+(
+    [Obj] string
+    ,[Prop] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(Obj ASC) DISTRIBUTED BY HASH(Obj)
+);
+*/

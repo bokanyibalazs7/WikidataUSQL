@@ -10,7 +10,7 @@ USING Microsoft.Analytics.Samples.Formats.Json;
         Obj
     FROM SubjPropObj;
 
-//Everything that we consider as a 'Type' (has subclass of)
+//Everything that we consider as a 'Hivatkozott tipus' (has subclass of)
 @allTypes=
     SELECT DISTINCT Subj
     FROM @subjPropObj
@@ -28,7 +28,7 @@ USING Microsoft.Analytics.Samples.Formats.Json;
     INTERSECT DISTINCT
     SELECT * FROM @typesWithInstance;
 
-//Everything that has an instance (it is on object in an 'instance of' statement), NOT UNIQUE
+//Everything that has an instance (it is an object in an 'instance of' statement), NOT UNIQUE
 @duplicateWithInstance = 
     SELECT Obj
     FROM @subjPropObj
@@ -61,7 +61,7 @@ SELECT AVG(Occurance) AS Average FROM @countOccurances;
     FROM @countOccurances;
 
 @spreadMaxMin = 
-    SELECT Math.Sqrt((double)AVG(SecondPower)) AS Spread, MAX(Occurance) AS Maximum, MIN(Occurance) AS Minimum
+    SELECT Math.Sqrt((double)AVG(SecondPower)) AS Spread, MAX(Occurance) AS Maximum, MIN(Occurance) AS Minimum, SUM(Occurance) AS Sum
     FROM @steptospread;
 
 //Little filter to find which subject has the most instance

@@ -1,0 +1,110 @@
+﻿// Auto-generated header code
+
+// Auto-generated header code ended
+
+// User script
+
+//ket reszbol all
+//elso resz az adatok eloallitasa, masodik az elemzesuk
+
+
+//elso resz
+/*
+@data = SELECT *  
+                FROM (VALUES  
+                           ("Q2", "P1", "Q1")  
+                         , ("Q3", "P1", "Q1")
+                         , ("Q4", "P1", "Q1")  
+                         , ("Q5", "P1", "Q2")  
+                         , ("Q6", "P1", "Q2")  
+                         , ("Q7", "P1", "Q2")  
+                         , ("Q8", "P1", "Q3")  
+                         , ("Q9", "P1", "Q6")  
+                         , ("Q10", "P1", "Q6")
+                         , ("Q11", "P1", "Q8")  
+                         , ("Q12", "P1", "Q9")
+                         , ("Q7", "P1", "Q3")  
+                         , ("Q10", "P1", "Q8")  
+                         , ("Q12", "P1", "Q5")  
+                         , ("Q1", "P1", "Q11") 
+                         , ("Q3", "P1", "Q11") 
+                         , ("Q5", "P1", "Q4") ) AS D(Subj, Prop, Obj);  
+*/
+/*
+@data =
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj
+    WHERE Prop == "P279";
+
+
+DROP FUNCTION IF EXISTS dbo.SimpleRecursion;
+CREATE FUNCTION dbo.SimpleRecursion(@path TABLE(LastElement string, CircleFlag bool, Paths SqlArray<string>), @founded TABLE(LastElement string, CircleFlag bool, Paths SqlArray<string>), @pathLen int = 0, @MaxIterations int = 5, @data TABLE(Subj string, Prop string, Obj string))
+RETURNS @result TABLE(LastElement string, CircleFlag bool, Paths SqlArray<string>)
+AS
+BEGIN
+    
+    
+        
+    @left_join = 
+        SELECT f.Subj AS LastElement, p.Paths.Contains(f.Subj) AS CircleFlag, new SqlArray<string>(p.Paths){f.Subj} AS Paths
+               FROM (SELECT * FROM @path WHERE CircleFlag == false AND LastElement != null) AS p
+                    LEFT OUTER JOIN (SELECT Subj, Obj FROM @data) AS f
+                                    ON f.Obj == p.LastElement;
+
+    @results = 
+        SELECT * FROM @founded
+        UNION ALL
+        SELECT * FROM @path WHERE LastElement == null;
+
+    IF (@pathLen >= @MaxIterations) THEN
+        @result = SELECT * FROM @results
+        UNION ALL
+        SELECT * FROM @left_join;
+    ELSE
+        @result = dbo.SimpleRecursion(@left_join, @results, @pathLen + 1, @MaxIterations, @data);
+    END;
+    
+    
+END; 
+
+
+
+
+//@path = SELECT * FROM (VALUES ("Q1", false, new SqlArray<string>(new string [] {"Q1"})) ) AS T(LastElement, CircleFlag, Paths);
+//@founded = SELECT * FROM (VALUES ("Q1", false, new SqlArray<string>(new string [] {"Q1"})) ) AS T(LastElement, CircleFlag, Paths);
+
+//@path = SELECT * FROM (VALUES ("Q35120", false, new SqlArray<string>(new string [] {"Q35120"})) ) AS T(LastElement, CircleFlag, Paths);
+@founded = SELECT * FROM (VALUES ("init", true, new SqlArray<string>(new string [] {"init"})) ) AS T(LastElement, CircleFlag, Paths);
+
+@path = SELECT * FROM WikidataPaths1;
+
+@toexplode = dbo.SimpleRecursion(@path, @founded, 0, 10, @data);
+//@toexplode = SELECT * FROM @path;
+INSERT INTO WikidataPaths
+SELECT
+    LastElement,
+    CircleFlag,
+    Paths
+FROM
+    @toexplode;
+
+*/
+
+//masodik resz - elemzes 
+
+@data = 
+    SELECT * FROM WikidataPaths;
+
+
+@analize = 
+    SELECT MIN(d.Paths.Count) AS MinValue, MAX(d.Paths.Count) AS MaxValue, AVG(d.Paths.Count) AS Average, STDEV(d.Paths.Count) AS StdDev
+    FROM @data AS d
+    WHERE CircleFlag == false;
+
+
+OUTPUT @analize
+TO "/wikidata/paths_length_MIN_MAX_AVG_STDEV.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);

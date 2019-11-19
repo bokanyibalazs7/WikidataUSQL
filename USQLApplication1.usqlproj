@@ -22,14 +22,43 @@
   </PropertyGroup>
   <ItemGroup>
     <Script Include="Examples\AveragePropOfType.usql" />
+    <Script Include="Examples\AvgInstanceOfRealTypes.usql" />
+    <Script Include="Examples\AvgPropertyOfTypes.usql" />
+    <Script Include="Examples\CalculateDepth.usql" />
+    <Script Include="Examples\CountRealTypes.usql" />
+    <Script Include="Examples\CreateTable.usql" />
+    <Script Include="Examples\HivatkozottTipusPeldany.usql" />
+    <Script Include="Examples\ItemsWithoutInstanceOf.usql" />
     <Script Include="Examples\ListHumans.usql" />
     <Script Include="Examples\ListTypes.usql" />
     <Script Include="Examples\Script.usql" />
+    <Script Include="Examples\SubjectPropObjectToFile.usql" />
     <Script Include="Examples\TableSample.usql" />
     <Script Include="Examples\TestStatements.usql" />
     <Script Include="Examples\TypesWithInstance.usql" />
     <ScriptCode Include="Examples\AveragePropOfType.usql.cs">
       <DependentUpon>Examples\AveragePropOfType.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\AvgInstanceOfRealTypes.usql.cs">
+      <DependentUpon>Examples\AvgInstanceOfRealTypes.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\AvgPropertyOfTypes.usql.cs">
+      <DependentUpon>Examples\AvgPropertyOfTypes.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\CalculateDepth.usql.cs">
+      <DependentUpon>Examples\CalculateDepth.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\CountRealTypes.usql.cs">
+      <DependentUpon>Examples\CountRealTypes.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\CreateTable.usql.cs">
+      <DependentUpon>Examples\CreateTable.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\HivatkozottTipusPeldany.usql.cs">
+      <DependentUpon>Examples\HivatkozottTipusPeldany.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\ItemsWithoutInstanceOf.usql.cs">
+      <DependentUpon>Examples\ItemsWithoutInstanceOf.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="Examples\ListHumans.usql.cs">
       <DependentUpon>Examples\ListHumans.usql</DependentUpon>
@@ -39,6 +68,9 @@
     </ScriptCode>
     <ScriptCode Include="Examples\Script.usql.cs">
       <DependentUpon>Examples\Script.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\SubjectPropObjectToFile.usql.cs">
+      <DependentUpon>Examples\SubjectPropObjectToFile.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="Examples\TableSample.usql.cs">
       <DependentUpon>Examples\TableSample.usql</DependentUpon>

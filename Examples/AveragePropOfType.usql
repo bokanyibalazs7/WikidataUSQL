@@ -1,37 +1,87 @@
-﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
-REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+﻿//elso resz a taxonomiai tipusokhoz tartozo property-k meghatarozasa
+//masodik resz a kapott adathalmaz elemzese
 
-USING Microsoft.Analytics.Samples.Formats.Json;
+//elso resz - adatok elokeszitese
+/*
+@subjPropObj = 
+SELECT * FROM SubjPropObj;
 
-@RawData =
-    SELECT [Id],
-           [Type],
-           [Claims]
-    FROM WikidataImport
-    WHERE Type == "item";
-
-@jsonPathResult =
-    SELECT [Id],
-           JsonFunctions.JsonTuple([Claims], @"$.*[?(@.mainsnak.datavalue.value.entity-type == 'item' && @.mainsnak.snaktype == 'value' && @.mainsnak.datatype == 'wikibase-item')].mainsnak") AS JsonPathResultMap
-    FROM @RawData;
-
-@jsonPathResultExploded=
-SELECT 
-     [Id] AS Subj
-     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.property").Values[0] AS Prop
-     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.datavalue.value.id").Values[0] AS Obj
-FROM @jsonPathResult
-CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
-
-
-@stmtFilter =
-    SELECT [Subj], Prop
-    FROM @jsonPathResultExploded
+//taxonomiai tipusok
+@taxTypes =
+    SELECT DISTINCT
+        Subj
+    FROM @subjPropObj
     WHERE Prop == "P279";
 
-@countProp =
-    SELECT [Subj],
-           COUNT(DISTINCT Prop) AS DistProps
-    FROM @jsonPathResultExploded
-    GROUP BY Subj
-    HAVING Prop ==
+//instance of sorok
+@instanceOfRows = 
+    SELECT * FROM @subjPropObj
+    WHERE Prop == "P31";
+
+//tax tipusok peldanyai
+//peldany - tipus formaban
+@instancesOfTaxTypes =
+    SELECT s.Subj AS Instance, s.Obj AS Types
+    FROM @instanceOfRows AS s
+         INNER JOIN
+         (
+         SELECT Subj
+         FROM @taxTypes
+               ) AS t
+         ON s.Obj == t.Subj;
+
+//ezen peldanyok propertijei
+@propsOfInstances = 
+    SELECT s.Subj, s.Prop 
+    FROM @subjPropObj AS s
+         INNER JOIN (SELECT Instance FROM @instancesOfTaxTypes) AS i
+         ON s.Subj == i.Instance;
+
+//azon prop, ahol tax tipus peldanya az obj
+//ami itt Obj, nekem Subj-kent kell az uniohoz
+//az elozovel azonos formara hozom
+@inverzPropOfInstances = 
+    SELECT s.Obj AS Subj, s.Prop
+    FROM @subjPropObj AS s
+         INNER JOIN (SELECT Instance FROM @instancesOfTaxTypes) AS i
+                    ON s.Obj == i.Instance;
+
+@unionProperties = 
+    SELECT * FROM @propsOfInstances
+    UNION
+    SELECT * FROM @inverzPropOfInstances;
+
+//taxonomiai tipusonkent csinalok egy group-by-t
+//a hozzajuk tartozo property-k egy sqlArray-ben
+@output = 
+    SELECT s.Types AS Obj, ARRAY_AGG(DISTINCT p.Prop) AS Prop
+    FROM @unionProperties AS p
+         INNER JOIN (SELECT Instance, Types FROM @instancesOfTaxTypes) AS s
+         ON s.Instance == p.Subj
+    GROUP BY s.Types;
+
+INSERT INTO TaxTypesAndProperties
+SELECT
+    Obj,
+    Prop
+FROM
+    @output;
+*/
+
+//masodik resz - elemzes
+
+@data = 
+    SELECT * FROM TaxTypesAndProperties;
+
+
+@analize = 
+    SELECT MIN(d.Prop.Count) AS MinValue, MAX(d.Prop.Count) AS MaxValue, AVG(d.Prop.Count) AS Average, STDEV(d.Prop.Count) AS StdDev
+    FROM @data AS d;
+
+
+
+OUTPUT @analize
+TO "/wikidata/prop-of-tax-types_MIN_MAX_AVG_STDEV.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+

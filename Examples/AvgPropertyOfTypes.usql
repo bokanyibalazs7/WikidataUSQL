@@ -1,0 +1,81 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@subjPropObj=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+//If we want to examine types with 'subclass of' property
+//If we want to examine all types, comment these three rowsets and uncomment line 38 rowset
+//Do not forget to modify the average at spread counting!!
+//Everything that we consider as a 'Type' (has subclass of)
+@allTypes=
+    SELECT DISTINCT Subj AS DSubj
+    FROM @subjPropObj
+    WHERE Prop == "P279";
+
+@typesWithSubclass = 
+    SELECT Subj FROM @subjPropObj AS spo
+                     INNER JOIN (SELECT * FROM @allTypes) AS a
+                     ON spo.Subj == a.DSubj;
+
+@typesProperties = 
+    SELECT Subj, COUNT() AS Properties
+    FROM @typesWithSubclass
+    GROUP BY Subj;
+  
+/*
+@AVGproperty = 
+SELECT AVG(Properties) AS Average, MAX(Properties) AS MaxProp FROM @typesProperties;
+*/
+
+
+/*
+@typesProperties = 
+    SELECT Subj, COUNT() AS Properties
+    FROM @subjPropObj
+    GROUP BY Subj;
+*/
+
+
+/*
+// Sampling
+@sample = 
+    SELECT * FROM @typesProperties
+                  SAMPLE ANY(100);
+*/
+
+/*
+@AVGproperty = 
+SELECT AVG(Properties) AS Average, MAX(Properties) AS MaxProp FROM @typesProperties;
+*/
+
+
+//Steps to calculate Average, Spread, Minimum and Maximum
+@steptospread = 
+    SELECT Properties, Math.Pow((double)(Properties - 6), 2) AS SecondPower //6 az @AVGproperty-ben kijott atlag, nem tudom pontosan hogyan lehetne kinyerni azt is, egyszerubb volt most beegetni
+    FROM @typesProperties;
+
+@spreadMaxMin = 
+    SELECT Math.Sqrt((double)AVG(SecondPower)) AS Spread
+    FROM @steptospread;
+
+
+//Little filter to find the Type with Max properties
+/*
+@maxobject = 
+    SELECT Subj
+    FROM @typesProperties
+    WHERE Properties == 8319;
+*/
+
+
+OUTPUT @spreadMaxMin
+TO "wikidata/spread-max-avg-prop-has-subclassOf.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+

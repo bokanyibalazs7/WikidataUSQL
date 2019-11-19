@@ -1,0 +1,37 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@subjPropObj=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+
+@distinctSubject = SELECT DISTINCT Subj FROM @subjPropObj WHERE Prop == "P31";
+
+@allDistSubject =
+    SELECT DISTINCT Subj
+    FROM @subjPropObj;
+
+@result = 
+    SELECT Subj FROM @allDistSubject
+    EXCEPT DISTINCT
+    SELECT * FROM @distinctSubject;
+
+@countDistWithInstance = 
+    SELECT COUNT() AS Cc FROM @result;
+
+@sample = SELECT * FROM @result SAMPLE ANY(20);
+
+
+OUTPUT @countDistWithInstance
+TO "/wikidata/count/withInstance.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @sample
+TO "/wikidata/count/sample.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
