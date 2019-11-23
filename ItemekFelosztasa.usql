@@ -1,0 +1,28 @@
+﻿@data=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+//Taxonomiai tipusok
+@taxtipus =
+    SELECT DISTINCT Subj
+    FROM @data
+    WHERE Prop == "P279";
+
+//Hivatkozott tipusok
+@hivatkozott =
+    SELECT DISTINCT Obj
+    FROM @data
+    WHERE Prop == "P31";
+
+//tipusok
+@tipusok = 
+    SELECT * FROM @taxtipus
+    UNION
+    SELECT * FROM @hivatkozott;
+
+//peldanyok
+@peldanyok = 
+SELECT 

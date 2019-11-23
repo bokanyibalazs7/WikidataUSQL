@@ -1,16 +1,11 @@
-﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
-REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
-
-USING Microsoft.Analytics.Samples.Formats.Json;
-
-@subjPropObj=
+﻿@subjPropObj=
     SELECT
         Subj,
         Prop,
         Obj
     FROM SubjPropObj;
 
-//Everything that we consider as a 'Hivatkozott tipus' (has subclass of)
+//Everything that we consider as a 'taxonomiai' (has subclass of)
 @allTypes=
     SELECT DISTINCT Subj
     FROM @subjPropObj

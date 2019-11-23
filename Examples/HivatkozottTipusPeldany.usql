@@ -1,37 +1,38 @@
-﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
-REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
-
-USING Microsoft.Analytics.Samples.Formats.Json;
-
-@subjPropObj=
+﻿@subjPropObj=
     SELECT
         Subj,
         Prop,
         Obj
     FROM SubjPropObj;
 
-//Everything that has an instance (it is on object in an 'instance of' statement), UNIQUE
-//Hivatkozott tipusok
-@typesWithInstance=
-    SELECT DISTINCT Obj
-    FROM @subjPropObj
+//szerepel instanceOf allitas alanyakent
+@alanyok = 
+    SELECT DISTINCT Subj FROM @subjPropObj
     WHERE Prop == "P31";
 
+//van subclassOf allitasa
+@van = 
+    SELECT DISTINCT Subj FROM @subjPropObj
+    WHERE Prop == "P279";
 
-@joinStmt =
-    SELECT DISTINCT Subj
-    FROM @subjPropObj AS spo
-         INNER JOIN
-         (
-         SELECT *
-         FROM @typesWithInstance
-               ) AS twi
-         ON spo.Obj == twi.Obj
-    WHERE Prop == "P31";
+@peldanyok = 
+    SELECT * FROM @alanyok
+    EXCEPT
+    SELECT * FROM @van;
 
 @count = 
-SELECT COUNT() AS ccc FROM @joinStmt;
+SELECT COUNT() AS ccc FROM @peldanyok;
+
+@sample=
+    SELECT *
+    FROM @peldanyok
+         SAMPLE ANY(30);
+
 
 OUTPUT @count
 TO "/wikidata/hivatkozott_tipus_peldany.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @sample
+TO "/wikidata/hivatkozott_tipus_peldany-minta.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);

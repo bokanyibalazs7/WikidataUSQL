@@ -1,37 +1,42 @@
-﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
-REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
-
-USING Microsoft.Analytics.Samples.Formats.Json;
-
-@subjPropObj=
+﻿@subjPropObj=
     SELECT
         Subj,
         Prop,
         Obj
     FROM SubjPropObj;
 
+//kiknek van
+@distinctSubject = SELECT DISTINCT Subj FROM @subjPropObj WHERE Prop == "P31"; //instanceOf
 
-@distinctSubject = SELECT DISTINCT Subj FROM @subjPropObj WHERE Prop == "P31";
-
+//osszes
 @allDistSubject =
     SELECT DISTINCT Subj
     FROM @subjPropObj;
 
+//osszes-van
 @result = 
     SELECT Subj FROM @allDistSubject
     EXCEPT DISTINCT
     SELECT * FROM @distinctSubject;
-
-@countDistWithInstance = 
+/*
+@countWithoutInstance = 
     SELECT COUNT() AS Cc FROM @result;
+
+@countDistSubjects = 
+    SELECT COUNT() AS C FROM @allDistSubject;
+
+
+OUTPUT @countWithoutInstance
+TO "/wikidata/item-instanceOf-nelkul.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @countDistSubjects
+TO "/wikidata/item-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+*/
 
 @sample = SELECT * FROM @result SAMPLE ANY(20);
 
-
-OUTPUT @countDistWithInstance
-TO "/wikidata/count/withInstance.csv"
-USING Outputters.Csv(outputHeader:true,quoting:true);
-
 OUTPUT @sample
-TO "/wikidata/count/sample.csv"
+TO "/wikidata/item-instanceOf-nelkul-minta.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);

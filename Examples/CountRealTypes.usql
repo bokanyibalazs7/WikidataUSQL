@@ -1,36 +1,20 @@
-﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
-REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+﻿@subjPropObj=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
 
-USING Microsoft.Analytics.Samples.Formats.Json;
-
-@RawData =
-    SELECT [Id],
-           [Type],
-           [Claims]
-    FROM WikidataImport
-    WHERE Type == "item";
-
-@jsonPathResult =
-    SELECT [Id],
-           JsonFunctions.JsonTuple([Claims], @"$.*[?(@.mainsnak.datavalue.value.entity-type == 'item' && @.mainsnak.snaktype == 'value' && @.mainsnak.datatype == 'wikibase-item')].mainsnak") AS JsonPathResultMap
-    FROM @RawData;
-
-@jsonPathResultExploded=
-SELECT 
-     [Id] AS Subj
-     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.property").Values[0] AS Prop
-     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.datavalue.value.id").Values[0] AS Obj
-FROM @jsonPathResult
-CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
-
+//taxonomiai tipusok
 @allTypes =
     SELECT DISTINCT [Subj]
-    FROM @jsonPathResultExploded
+    FROM @subjPropObj
     WHERE Prop == "P279";
 
-@typesWithInstance=
+//hivatkozott tipusok
+@typesWithInstance =
     SELECT DISTINCT [Obj]
-    FROM @jsonPathResultExploded
+    FROM @subjPropObj
     WHERE Prop == "P31";
 
 @except=
@@ -49,9 +33,9 @@ CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
     FROM @except;
 
 OUTPUT @countExcept
-TO "/wikidata/count-real-types.csv"
+TO "/wikidata/hivatkozott-de-nem-taxonomiai-darabszam.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);
 
 OUTPUT @exceptSample
-TO "/wikidata/real-type-example.csv"
+TO "/wikidata/hivatkozott-de-nem-taxonomiai-minta.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);
