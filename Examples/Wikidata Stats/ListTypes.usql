@@ -22,5 +22,5 @@
            
 
 OUTPUT @stmtCount
-TO "/wikidata/taxonomiai-tipus-darabszam.csv"
+TO "/wikidata/taxonomiai-tipus-darabszam_pledamintaasdsad.csv"
 USING Outputters.Csv(outputHeader:true,quoting:true);

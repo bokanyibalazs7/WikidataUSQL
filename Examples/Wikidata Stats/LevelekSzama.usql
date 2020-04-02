@@ -1,0 +1,51 @@
+﻿//level: van subclass of allitasa, de nem szerepel subclass of targyakent
+@data =
+    SELECT *
+    FROM SubjPropObj;
+
+//meghatarozas: taxonomiai es (osszes - szerepel subclass of targyakent)
+@taxonomiai = 
+    SELECT DISTINCT Subj FROM @data
+    WHERE Prop == "P279";
+
+@szerepel = 
+    SELECT DISTINCT Obj FROM @data
+    WHERE Prop == "P279";
+
+@alls = 
+    SELECT DISTINCT Subj FROM @data;
+
+@allo = 
+    SELECT DISTINCT Obj FROM @data;
+
+@itemek = 
+    SELECT * FROM @alls
+    UNION
+    SELECT * FROM @allo;
+
+@nem_szerepel = 
+    SELECT * FROM @itemek
+    EXCEPT
+    SELECT * FROM @szerepel;
+
+@levelek =
+    SELECT *
+    FROM @taxonomiai
+    INTERSECT
+    SELECT *
+    FROM @nem_szerepel;
+
+@minta = 
+    SELECT * FROM @levelek
+                  SAMPLE ANY(20);
+
+@darab = 
+    SELECT COUNT() AS Ccc FROM @levelek;
+
+OUTPUT @minta
+TO "/wikidata/levelek-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @darab
+TO "/wikidata/levelek-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

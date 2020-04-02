@@ -1,0 +1,59 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@RawData =
+    SELECT [Id],
+           [Type],
+           [Claims]
+    FROM WikidataImport
+    WHERE Type == "property";
+
+@jsonPathResult =
+    SELECT [Id],
+           JsonFunctions.JsonTuple<byte[]>([Claims], @"$.*[?(@.mainsnak.datavalue.value.entity-type == 'item' && @.mainsnak.snaktype == 'value' && @.mainsnak.datavalue.type == 'wikibase-entityid')]") AS Qualifiers
+    FROM @RawData;
+
+
+@jsonPathResultExploded=
+SELECT 
+     [Id]
+     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.mainsnak.property").Values[0] AS PropConstraint
+     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.mainsnak.datavalue.value.id").Values[0] AS ValueTypeConstraint
+     ,JsonFunctions.JsonTuple<byte[]>(jpr.msjson,@"$.qualifiers") AS Class
+FROM @jsonPathResult
+CROSS APPLY EXPLODE(Qualifiers) AS jpr(key, msjson);
+
+
+//outer apply használatával megmaradnak azok a sorok is, ahol üres az előző rowset class oszlopa
+//byte[]-kent tarolom meg itt is
+//kezelni kell, ha az elozo lepesben a byte[] null erteket vett fel, akkor tovabbra is null marad
+@classExploded = 
+    SELECT 
+        Id,
+        PropConstraint,
+        ValueTypeConstraint,
+        (r.msjson == null ? null : JsonFunctions.JsonTuple<byte[]>(r.msjson, @"")) AS Class
+    FROM @jsonPathResultExploded AS jp
+         OUTER APPLY
+         EXPLODE(jp.Class) AS r(key, msjson);
+
+//itt is outer apply-t hasznalok, hogy ne vesszen el semmi
+//mar nem kell byte[], string tombot fogok tarolni
+//byte[] null esetet itt is figyelni kell
+@finalExploded = 
+    SELECT 
+        Id,
+        PropConstraint,
+        ValueTypeConstraint,
+        r.key AS Class,
+        (r.value == null ? null : JsonFunctions.JsonTuple(r.value, @"$..id").Values) AS QualifierValues
+    FROM @classExploded
+         OUTER APPLY
+         EXPLODE(Class) AS r(key, value);
+
+
+
+INSERT INTO PropertiesWithQualifiers
+SELECT * FROM @finalExploded;

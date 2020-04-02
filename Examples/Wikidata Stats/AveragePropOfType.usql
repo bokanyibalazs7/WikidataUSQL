@@ -19,8 +19,9 @@ SELECT * FROM SubjPropObj;
     WHERE Prop == "P31";
 
 //tax tipusok peldanyai
-//peldany - tipus formaban
-@instancesOfTaxTypes =
+//peldany: van instance of de nincs subclass of allitasa
+//elso lepes: valami-instance of-taxonomiai tipus
+@filter =
     SELECT s.Subj AS Instance, s.Obj AS Types
     FROM @instanceOfRows AS s
          INNER JOIN
@@ -29,6 +30,19 @@ SELECT * FROM SubjPropObj;
          FROM @taxTypes
                ) AS t
          ON s.Obj == t.Subj;
+
+//masodik lepes: nincs subclass-instance of-taxonomiai tipus
+//ehhez kell egy tabla, amiben azokat tarolon, akiknek nincsen subclass of-ja
+//legegyszerubb: osszes - van
+@nincs_subclass = 
+    SELECT DISTINCT Subj FROM @subjPropObj
+    EXCEPT
+    SELECT * FROM @taxTypes;
+
+@instancesOfTaxTypes = 
+    SELECT f.Instance, f.Types FROM @filter AS f
+                                    INNER JOIN (SELECT Subj FROM @nincs_subclass) AS n
+                                    ON f.Instance == n.Subj;
 
 //ezen peldanyok propertijei
 @propsOfInstances = 
@@ -60,7 +74,7 @@ SELECT * FROM SubjPropObj;
          ON s.Instance == p.Subj
     GROUP BY s.Types;
 
-INSERT INTO TaxTypesAndProperties
+INSERT INTO TaxTypesAndProperties2
 SELECT
     Obj,
     Prop
@@ -71,17 +85,24 @@ FROM
 //masodik resz - elemzes
 
 @data = 
-    SELECT * FROM TaxTypesAndProperties;
+    SELECT Obj, Prop, 1 AS Same FROM TaxTypesAndProperties2;
 
 
 @analize = 
     SELECT MIN(d.Prop.Count) AS MinValue, MAX(d.Prop.Count) AS MaxValue, AVG(d.Prop.Count) AS Average, STDEV(d.Prop.Count) AS StdDev
     FROM @data AS d;
 
+@median = 
+    SELECT DISTINCT Same, PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY d.Prop.Count) OVER(PARTITION BY Same) AS Median
+    FROM @data AS d;
+
 
 
 OUTPUT @analize
-TO "/wikidata/prop-of-tax-types_MIN_MAX_AVG_STDEV.csv"  
+TO "/wikidata/taxonomiai_tipusok_property_MIN_MAX_AVG_STDEV.csv"  
 USING Outputters.Csv(outputHeader:true,quoting:true);
 
 
+OUTPUT @median
+TO "/wikidata/taxonomiai_tipusok_property_MEDIAN.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);

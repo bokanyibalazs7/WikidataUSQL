@@ -1,0 +1,94 @@
+﻿//az utvonalak, amikbol ki akarom nyerni
+@paths = 
+    SELECT * FROM WikidataPaths;
+
+//a tabla, amiben ki vannak gyujtve az Itemek, mellette a Property tomb oszloppal
+//ez a sema szerintiekre vonatkozik
+/*
+@properties =
+    SELECT *
+    FROM TaxTypesAndPropertiesByScheme;
+*/
+
+//ez pedig a peldanyadatok szerintire
+@properties = 
+    SELECT Obj AS Subject, Prop AS Properties
+    FROM TaxTypesAndProperties2;
+
+//szetdobom a tombot, ugy, hogy a tomb is megjelenik minden sorban
+//ezaltal tudom, hogy melyik elem melyik utvonalhoz tartozik es az utvonal sorrend sem veszik el
+@szetdobott = 
+    SELECT Item, Paths
+    FROM @paths
+         CROSS APPLY
+         EXPLODE(Paths) AS r(Item);
+
+//leszurom az Item-eket ugy, hogy csak azok maradjanak meg, amik engem erdekelnek,
+//vagyis tudom, hogy hany property-juk van
+@osszesit = 
+    SELECT s.Item, s.Paths
+    FROM @szetdobott AS s
+         INNER JOIN (SELECT Subject FROM @properties) AS p
+         ON s.Item == p.Subject;
+
+//megkeresem, hogy az adott Item hanyadik helyen all
+//minden elotte levo elem az o ose lesz, ki tudom igy nyerni
+@indexelve = 
+    SELECT Item, Paths, Paths.ToList<string>().IndexOf(Item) AS Index
+    FROM @osszesit;
+
+//megindexelem vele a tombot, kinyerem az osoket
+@osok = 
+    SELECT Item, Paths, Index, new SqlArray<string>(Paths.ToList<string>().GetRange(0,Index).ToArray()) AS Parents
+    FROM @indexelve;
+
+//ekkor van egy Item (ami engem erdekel), Os_tomb tablam
+//egy adott Item tobbszor is szerepelhet, hiszen tobb utvonalon is elofordulhat
+//azt akarom elerni, hogy minden Item egyszer szerepeljen, es egy DISTINCT os tomb legyen mellette
+//Ehhez eloszor szetdobom az osoket
+@oslistaSzet = 
+    SELECT Item, Parent
+    FROM @osok
+         CROSS APPLY
+         EXPLODE(Parents) AS r(Parent);
+
+//csinalok egy group by-t, ahol kikotom, hogy egyedi elemek legyenek az osok kozott
+@egyediOs = 
+    SELECT Item, ARRAY_AGG(DISTINCT Parent) AS Parents
+    FROM @oslistaSzet
+    GROUP BY Item;
+
+//utana ezt megint szetdobom, mert hozza kell meg rendelni az osokhoz az o sajat property szamukat
+@egyediOsSzet = 
+    SELECT Item, Parent
+    FROM @egyediOs
+         CROSS APPLY
+         EXPLODE(Parents) AS r(Parent);
+
+//join-olom a properties tablat, ezaltal azok az osok maradnak meg, akikrol tenyleg tudok is valamit, es azt a valamit fel is veszem hozzajuk
+@osTulajszam = 
+    SELECT e.Item AS Item, e.Parent AS Parent, p.Properties.Count AS PropNum
+    FROM @egyediOsSzet AS e 
+         INNER JOIN (SELECT Subject, Properties FROM @properties) AS p
+         ON e.Parent == p.Subject;
+
+//az igy letrejott adatokat Item szerint csoportositom, osokbol csinalok egy listat, a hozzajuk tartozo prop szamot pedig osszegzem
+@egyediOs = 
+    SELECT Item, ARRAY_AGG(DISTINCT Parent) AS Parents, SUM(PropNum) AS PropSum
+    FROM @osTulajszam
+    GROUP BY Item;
+
+//ez nem eleg meg
+//ehhez hozza kell meg venni minden Item sajat prop szamat
+@join = 
+    SELECT e.Item, (e.PropSum + p.Properties.Count) AS Properties
+    FROM @egyediOs AS e
+         INNER JOIN (SELECT Subject, Properties FROM @properties) AS p
+         ON e.Item == p.Subject;
+
+//es itt vagyok keszen
+INSERT INTO PropsByInstancesWithParents
+SELECT
+    *
+FROM
+    @join;

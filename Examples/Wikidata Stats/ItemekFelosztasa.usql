@@ -1,0 +1,158 @@
+﻿@data = SELECT * FROM SubjPropObj;
+
+@allDistSubject =
+    SELECT DISTINCT Subj
+    FROM @data;
+
+@allDistObj = 
+    SELECT DISTINCT Obj AS Subj
+    FROM @data;
+
+//osszes Item
+@osszesitve = 
+    SELECT Subj FROM @allDistSubject
+    UNION DISTINCT
+    SELECT Subj FROM @allDistObj;
+
+@osszes_darab = 
+    SELECT COUNT() AS CCc FROM @osszesitve;
+
+//minden olyan Item, amikrol semmilyen allitas nincsen
+@hibas_itemek =
+    SELECT *
+    FROM @allDistObj
+    EXCEPT DISTINCT
+    SELECT *
+    FROM @allDistSubject;
+
+@hibas_item_darabszam = 
+    SELECT COUNT() AS cc FROM @hibas_itemek;
+
+//azon allitasok, melyek targya hibas Item
+@hibasra_mutato_allitasok = 
+SELECT d.Subj, d.Prop, d.Obj
+    FROM @data AS d
+         INNER JOIN (SELECT Subj FROM @hibas_itemek) AS u
+         ON d.Obj == u.Subj;
+
+@hibas_minta = 
+    SELECT * FROM @hibasra_mutato_allitasok
+                  SAMPLE ANY(20);
+
+//azon hivatkozott tipusok, melyek hibasak
+@hibas_hivatkozott_tipusok = 
+    SELECT DISTINCT Obj FROM @hibasra_mutato_allitasok
+    WHERE Prop == "P31";
+
+@hibas_hivatkozott_tipusok_darabszam = 
+    SELECT COUNT() AS ccc FROM @hibas_hivatkozott_tipusok;
+
+@hibas_hivatkozott_tipusok_minta = 
+    SELECT * FROM @hibas_hivatkozott_tipusok
+                  SAMPLE ANY(20);
+
+//ezen hibas hivatkozott tipusok peldanyai
+//amik szerepelnek instance of alanyakent
+@subjects = 
+SELECT DISTINCT Subj FROM @hibasra_mutato_allitasok
+    WHERE Prop == "P31";
+
+//akiknek van subclass of-juk
+@van = 
+    SELECT DISTINCT Subj FROM @data
+    WHERE Prop == "P279";
+
+//peldanyok
+@hibas_peldanyok = 
+    SELECT * FROM @subjects
+    EXCEPT
+    SELECT * FROM @van;
+
+@hibas_peldany_darabszam = 
+    SELECT COUNT() AS CCc FROM @hibas_peldanyok;
+
+@hibas_peldany_minta = 
+    SELECT * FROM @hibas_peldanyok
+                  SAMPLE ANY(20);
+
+//ellenorzes: nem hibas hivatkozottak peldanyai
+//hivatkozottak
+@osszes_hivatkozott = 
+    SELECT DISTINCT Obj FROM @data
+    WHERE Prop == "P31";
+
+@nem_hibas_hivatkozott = 
+    SELECT * FROM @osszes_hivatkozott
+    EXCEPT DISTINCT
+    SELECT * FROM @hibas_hivatkozott_tipusok;
+
+@nem_hibas_sorok = 
+    SELECT d.Subj, d.Prop, d.Obj FROM @data AS d
+                         INNER JOIN (SELECT Obj FROM @nem_hibas_hivatkozott) AS n
+                                ON d.Obj == n.Obj;
+@nem_hibas_alanyok = 
+    SELECT DISTINCT Subj FROM @nem_hibas_sorok
+    WHERE Prop == "P31";
+
+
+//subclass-of szurese
+@nem_hibas_peldanyok = 
+    SELECT * FROM @nem_hibas_alanyok
+    EXCEPT
+    SELECT * FROM @van;
+
+@nem_hibas_peldany_darab = 
+    SELECT COUNT() AS Ccc FROM @nem_hibas_peldanyok;
+
+@nem_hibas_peldany_minta = 
+    SELECT * FROM @nem_hibas_peldanyok
+    SAMPLE ANY(20);
+
+
+@osszesites = 
+    SELECT * FROM @nem_hibas_peldanyok
+    UNION
+    SELECT * FROM @hibas_peldanyok;
+
+@osszesitett_darab = 
+    SELECT COUNT() AS Ccc FROM @osszesites;                    
+
+OUTPUT @osszes_darab
+TO "/wikidata/item-felosztas/osszes-item-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_item_darabszam
+TO "/wikidata/item-felosztas/hibas-item-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_minta
+TO "/wikidata/item-felosztas/hibas-item-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_hivatkozott_tipusok_darabszam
+TO "/wikidata/item-felosztas/hibas-hivatkozott-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_hivatkozott_tipusok_minta
+TO "/wikidata/item-felosztas/hibas-hivatkozott-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_peldany_darabszam
+TO "/wikidata/item-felosztas/hibas-hivatkozottak-peldanyai-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @hibas_peldany_minta
+TO "/wikidata/item-felosztas/hibas-hivatkozottak-peldanyai-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @nem_hibas_peldany_darab
+TO "/wikidata/item-felosztas/nem-hibas-hivatkozottak-peldanyai-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @nem_hibas_peldany_minta
+TO "/wikidata/item-felosztas/nem-hibas-hivatkozottak-peldanyai-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @osszesitett_darab
+TO "/wikidata/item-felosztas/osszesitett_darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

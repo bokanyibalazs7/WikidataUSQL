@@ -21,53 +21,103 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Script Include="Examples\AveragePropOfType.usql" />
-    <Script Include="Examples\AvgInstanceOfRealTypes.usql" />
-    <Script Include="Examples\CalculateDepth.usql" />
-    <Script Include="Examples\CountRealTypes.usql" />
-    <Script Include="Examples\CreateTable.usql" />
-    <Script Include="Examples\HivatkozottTipusPeldany.usql" />
-    <Script Include="Examples\ItemsWithoutInstanceOf.usql" />
-    <Script Include="Examples\ListTypes.usql" />
-    <Script Include="Examples\Script.usql" />
-    <Script Include="Examples\SubjectPropObjectToFile.usql" />
-    <Script Include="Examples\TypesWithInstance.usql" />
-    <ScriptCode Include="Examples\AveragePropOfType.usql.cs">
-      <DependentUpon>Examples\AveragePropOfType.usql</DependentUpon>
+    <Script Include="Examples\Azure Search\CreateSearchTables.usql" />
+    <Script Include="Examples\Azure Search\ExtractData.usql" />
+    <Script Include="Examples\Wikidata Stats\AveragePropOfType.usql" />
+    <Script Include="Examples\Wikidata Stats\AveragePropOfTypeWithParents.usql" />
+    <Script Include="Examples\Wikidata Stats\AvgInstanceOfRealTypes.usql" />
+    <Script Include="Examples\Wikidata Stats\AvgPropOfTypeByScheme.usql" />
+    <Script Include="Examples\Wikidata Stats\CalculateDepth.usql" />
+    <Script Include="Examples\Wikidata Stats\CountRealTypes.usql" />
+    <Script Include="Examples\Wikidata Stats\CreateTable.usql" />
+    <Script Include="Examples\Wikidata Stats\ExtractItemsWithLabels.usql" />
+    <Script Include="Examples\Wikidata Stats\ExtractQualifiersFromClaims.usql" />
+    <Script Include="Examples\Wikidata Stats\HianyVizsgalat.usql" />
+    <Script Include="Examples\Wikidata Stats\HivatkozottTipusPeldany.usql" />
+    <Script Include="Examples\Wikidata Stats\ItemekFelosztasa.usql" />
+    <Script Include="Examples\Wikidata Stats\ItemOsosztalyokEloallitasa.usql" />
+    <Script Include="Examples\Wikidata Stats\LevelekSzama.usql" />
+    <Script Include="Examples\Wikidata Stats\ListTypes.usql" />
+    <Script Include="Examples\Wikidata Stats\PropertyEntityTypes.usql" />
+    <Script Include="Examples\Wikidata Stats\PropsOfProperties.usql" />
+    <Script Include="Examples\Wikidata Stats\Script.usql" />
+    <Script Include="Examples\Wikidata Stats\SubjectPropObjectToFile.usql" />
+    <Script Include="Examples\Wikidata Stats\TipusokFelosztasa.usql" />
+    <Script Include="Examples\Wikidata Stats\TypesWithInstance.usql" />
+    <ScriptCode Include="Examples\Azure Search\CreateSearchTables.usql.cs">
+      <DependentUpon>Examples\Azure Search\CreateSearchTables.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\AvgInstanceOfRealTypes.usql.cs">
-      <DependentUpon>Examples\AvgInstanceOfRealTypes.usql</DependentUpon>
+    <ScriptCode Include="Examples\Azure Search\ExtractData.usql.cs">
+      <DependentUpon>Examples\Azure Search\ExtractData.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\CalculateDepth.usql.cs">
-      <DependentUpon>Examples\CalculateDepth.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\AveragePropOfType.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\AveragePropOfType.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\CountRealTypes.usql.cs">
-      <DependentUpon>Examples\CountRealTypes.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\AveragePropOfTypeWithParents.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\AveragePropOfTypeWithParents.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\CreateTable.usql.cs">
-      <DependentUpon>Examples\CreateTable.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\AvgInstanceOfRealTypes.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\AvgInstanceOfRealTypes.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\HivatkozottTipusPeldany.usql.cs">
-      <DependentUpon>Examples\HivatkozottTipusPeldany.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\AvgPropOfTypeByScheme.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\AvgPropOfTypeByScheme.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\ItemsWithoutInstanceOf.usql.cs">
-      <DependentUpon>Examples\ItemsWithoutInstanceOf.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\CalculateDepth.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\CalculateDepth.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\ListTypes.usql.cs">
-      <DependentUpon>Examples\ListTypes.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\CountRealTypes.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\CountRealTypes.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\Script.usql.cs">
-      <DependentUpon>Examples\Script.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\CreateTable.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\CreateTable.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\SubjectPropObjectToFile.usql.cs">
-      <DependentUpon>Examples\SubjectPropObjectToFile.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\ExtractItemsWithLabels.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\ExtractItemsWithLabels.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="Examples\TypesWithInstance.usql.cs">
-      <DependentUpon>Examples\TypesWithInstance.usql</DependentUpon>
+    <ScriptCode Include="Examples\Wikidata Stats\ExtractQualifiersFromClaims.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\ExtractQualifiersFromClaims.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\HianyVizsgalat.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\HianyVizsgalat.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\HivatkozottTipusPeldany.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\HivatkozottTipusPeldany.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\ItemekFelosztasa.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\ItemekFelosztasa.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\ItemOsosztalyokEloallitasa.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\ItemOsosztalyokEloallitasa.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\LevelekSzama.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\LevelekSzama.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\ListTypes.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\ListTypes.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\PropertyEntityTypes.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\PropertyEntityTypes.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\PropsOfProperties.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\PropsOfProperties.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\Script.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\Script.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\SubjectPropObjectToFile.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\SubjectPropObjectToFile.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\TipusokFelosztasa.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\TipusokFelosztasa.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="Examples\Wikidata Stats\TypesWithInstance.usql.cs">
+      <DependentUpon>Examples\Wikidata Stats\TypesWithInstance.usql</DependentUpon>
     </ScriptCode>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Examples" />
+    <Folder Include="Examples\Azure Search" />
+    <Folder Include="Examples\Wikidata Stats" />
   </ItemGroup>
   <!-- check for SDK Build target in current path then in USQLSDKPath-->
   <Import Project="UsqlSDKBuild.targets" Condition="Exists('UsqlSDKBuild.targets')" />

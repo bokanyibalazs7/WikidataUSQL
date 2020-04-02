@@ -1,0 +1,38 @@
+﻿@RawData =
+    SELECT [Id]
+    FROM WikidataImport
+    WHERE Type == "item";
+
+@tablaban = 
+    SELECT DISTINCT Subj FROM SubjPropObj
+    UNION
+    SELECT DISTINCT Obj FROM SubjPropObj;
+
+@except = 
+    SELECT * FROM @RawData
+    EXCEPT
+    SELECT * FROM @tablaban;
+
+
+
+@sample = 
+SELECT * FROM @except SAMPLE ANY(20);
+
+@darab = 
+SELECT COUNT() AS Ccc FROM @except;
+/*
+INSERT INTO PropPropSubj
+SELECT
+    Subj,
+    Prop,
+    Obj
+FROM @jsonPathResultExploded;
+*/
+
+OUTPUT @sample
+TO "/wikidata/arva-item-minta.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @darab
+TO "/wikidata/arva-item-darabszam.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);

@@ -1,0 +1,39 @@
+﻿@byScheme = 
+    SELECT Item, Properties, 1 AS Same
+    FROM PropsBySchemeWithParents;
+
+@byInstances = 
+    SELECT Item, Properties, 1 AS Same
+    FROM PropsByInstancesWithParents;
+
+@jellemzok_scheme = 
+    SELECT MAX(Properties) AS Maximum, MIN(Properties) AS Minimum, AVG(Properties) AS Average, STDEV(Properties) AS Spread
+    FROM @byScheme;
+
+@median_scheme = 
+    SELECT DISTINCT Same, PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY Properties) OVER(PARTITION BY Same) AS Median
+    FROM @byScheme;
+
+@jellemzok_instance = 
+    SELECT MAX(Properties) AS Maximum, MIN(Properties) AS Minimum, AVG(Properties) AS Average, STDEV(Properties) AS Spread
+    FROM @byInstances;
+
+@median_instance = 
+    SELECT DISTINCT Same, PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY Properties) OVER(PARTITION BY Same) AS Median
+    FROM @byInstances;
+
+OUTPUT @jellemzok_scheme
+TO "/wikidata/tax-tipus-tulajdonsagai/tax-tipus-tulajdonsagai-sema-szerint-AVG-MIN-MAX-STDEV.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @median_scheme
+TO "/wikidata/tax-tipus-tulajdonsagai/tax-tipus-tulajdonsagai-sema-szerint-MEDIAN.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @jellemzok_instance
+TO "/wikidata/tax-tipus-tulajdonsagai/tax-tipus-tulajdonsagai-peldanyok-szerint-AVG-MIN-MAX-STDEV.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @median_instance
+TO "/wikidata/tax-tipus-tulajdonsagai/tax-tipus-tulajdonsagai-peldanyok-szerint-MEDIAN.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

@@ -1,0 +1,75 @@
+﻿
+/*
+@itemProps = 
+    SELECT Subj, Obj FROM SubjPropProp
+    WHERE Prop == "P1963";
+
+//szurni a taxonimiai tipusokra
+//taxonomiai tipusok
+@taxTypes =
+    SELECT DISTINCT
+        Subj
+    FROM SubjPropObj
+    WHERE Prop == "P279";
+
+//inner join-nal szurok
+@tax_filter = 
+    SELECT i.Subj AS Subject, i.Obj AS Obj
+    FROM @itemProps AS i
+         INNER JOIN(
+            SELECT Subj FROM @taxTypes) AS t
+         ON i.Subj == t.Subj;
+
+//eddig a simakat neztem
+//innentol jon az inverz
+@inverz_starter = 
+    SELECT Id AS Subject, QualifierValues AS Properties
+FROM PropertiesWithQualifiers
+     WHERE PropConstraint == "P2302" && ValueTypeConstraint == "Q21510865" && Class == "P2308";
+
+@inverz_exploded =  
+    SELECT de.Subject AS Obj, emp AS Subject   
+      FROM @inverz_starter AS de  
+     CROSS APPLY  
+     EXPLODE(de.Properties) AS dp(emp);
+
+@union = 
+    SELECT Subject, Obj FROM @tax_filter
+    UNION ALL
+    SELECT Subject, Obj FROM @inverz_exploded;
+
+@grouping = 
+    SELECT Subject, ARRAY_AGG(DISTINCT Obj) AS Properties
+    FROM @union
+    GROUP BY Subject;
+
+INSERT INTO TaxTypesAndPropertiesByScheme
+SELECT
+    Subject,
+    Properties
+FROM
+    @grouping;
+*/
+
+@data = 
+    SELECT Subject, Properties AS Prop, 1 AS Same FROM TaxTypesAndPropertiesByScheme;
+
+
+@analize = 
+    SELECT MIN(d.Prop.Count) AS MinValue, MAX(d.Prop.Count) AS MaxValue, AVG(d.Prop.Count) AS Average, STDEV(d.Prop.Count) AS StdDev
+    FROM @data AS d;
+
+@median = 
+    SELECT DISTINCT Same, PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY d.Prop.Count) OVER(PARTITION BY Same) AS Median
+    FROM @data AS d;
+
+
+
+OUTPUT @analize
+TO "/wikidata/taxonomiai_tipusok_property_sema_alapjan_MIN_MAX_AVG_STDEV.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+
+OUTPUT @median
+TO "/wikidata/taxonomiai_tipusok_property_sema_alapjan_MEDIAN.csv"  
+USING Outputters.Csv(outputHeader:true,quoting:true);

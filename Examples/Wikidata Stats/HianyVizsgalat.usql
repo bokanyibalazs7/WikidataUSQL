@@ -1,0 +1,99 @@
+﻿@data =
+    SELECT *
+    FROM SubjPropObj;
+
+@allDistSubject =
+    SELECT DISTINCT Subj
+    FROM @data;
+
+@allDistObj = 
+    SELECT DISTINCT Obj AS Subj
+    FROM @data;
+
+//osszes Item
+@osszesitem = 
+    SELECT Subj FROM @allDistSubject
+    UNION DISTINCT
+    SELECT Subj FROM @allDistObj;
+
+//kiknek nincs instance Of allitasa?
+//kiknek van
+@van_instanceof = SELECT DISTINCT Subj FROM @data WHERE Prop == "P31"; //instanceOf
+
+//nincs = osszes-van
+@nincs_instanceof = 
+    SELECT Subj FROM @osszesitem
+    EXCEPT DISTINCT
+    SELECT * FROM @van_instanceof;
+
+@instance_hiany_darab =
+    SELECT COUNT() AS Ccc
+    FROM @nincs_instanceof;
+
+//nincs SubclassOf allitasa
+//kiknek van
+@van_subclass =
+    SELECT DISTINCT Subj
+    FROM @data
+    WHERE Prop == "P279";
+
+//nincs = osszes - van
+@nincs_subclass = 
+    SELECT Subj FROM @osszesitem
+    EXCEPT
+    SELECT Subj FROM @van_subclass;
+
+@subclass_hiany_darab = 
+    SELECT COUNT() AS Ccc FROM @nincs_subclass;
+
+//se instance se subclass
+@egyiksem = 
+    SELECT * FROM @nincs_instanceof
+    INTERSECT
+    SELECT * FROM @nincs_subclass;
+
+@egyiksem_darab =
+    SELECT COUNT() AS Ccc
+    FROM @egyiksem;
+
+@egyiksem_minta = 
+SELECT * FROM @egyiksem SAMPLE ANY(20);
+
+//nincs subclassOf-ja, de van olyan subclassOf, ami ra mutat
+@filter = 
+    SELECT DISTINCT Obj FROM @data AS d
+                             INNER JOIN (SELECT Subj FROM @nincs_subclass) AS n
+                             ON d.Obj == n.Subj
+    WHERE d.Prop == "P279";
+
+@filter_darab = 
+    SELECT COUNT() AS Ccc FROM @filter;
+
+@filter_minta = 
+    SELECT * FROM @filter SAMPLE ANY(20);
+
+
+
+OUTPUT @instance_hiany_darab
+TO "/wikidata/hiany-vizsgalat/item-instanceOf-nelkul-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @subclass_hiany_darab
+TO "/wikidata/hiany-vizsgalat/item-subclassOf-nelkul-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @egyiksem_darab
+TO "/wikidata/hiany-vizsgalat/item-subclassOf-instanceOf-nelkul-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @egyiksem_minta
+TO "/wikidata/hiany-vizsgalat/item-subclassOf-instanceOf-nelkul-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @filter_darab
+TO "/wikidata/hiany-vizsgalat/nincs-subclass-de-mutat-ra-subclass-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @filter_minta
+TO "/wikidata/hiany-vizsgalat/nincs-subclass-de-mutat-ra-subclass-minta.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

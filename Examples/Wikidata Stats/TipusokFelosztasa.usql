@@ -1,0 +1,79 @@
+﻿@data=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+//Taxonomiai tipusok
+@taxtipus =
+    SELECT DISTINCT Subj
+    FROM @data
+    WHERE Prop == "P279";
+
+//Hivatkozott tipusok
+@hivatkozott =
+    SELECT DISTINCT Obj 
+    FROM @data
+    WHERE Prop == "P31";
+
+@taxDeNemHivatkozott = 
+    SELECT * FROM @taxtipus
+    EXCEPT DISTINCT
+    SELECT * FROM @hivatkozott;
+
+@countTaxMinuszHiv =
+    SELECT COUNT() AS Cc
+    FROM @taxDeNemHivatkozott;
+
+@taxEsHiv = 
+    SELECT * FROM @taxtipus
+    INTERSECT DISTINCT
+    SELECT * FROM @hivatkozott;
+
+@countTaxEsHiv = 
+    SELECT COUNT() AS Cc
+    FROM @taxEsHiv;
+
+@allDistSubject =
+    SELECT DISTINCT Subj
+    FROM @data;
+
+@allDistObj = 
+    SELECT DISTINCT Obj AS Subj
+    FROM @data;
+
+//osszes Item
+@filter = 
+    SELECT Subj FROM @allDistSubject
+    UNION DISTINCT
+    SELECT Subj FROM @allDistObj;
+
+@union = 
+    SELECT * FROM @taxtipus
+    UNION
+    SELECT * FROM @hivatkozott;
+
+@egyiksem = 
+    SELECT * FROM @filter
+    EXCEPT DISTINCT
+    SELECT * FROM @union;
+
+@countEgyiksem = 
+    SELECT COUNT() AS Cc
+    FROM @egyiksem;
+
+
+
+
+OUTPUT @countTaxMinuszHiv
+TO "/wikidata/taxonomiai-de-nem-hivatkozott-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @countTaxEsHiv
+TO "/wikidata/taxonomiai-es-hivatkozott-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @countEgyiksem
+TO "/wikidata/nem-taxonomiai-es-nem-hivatkozott-darabszam.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

@@ -1,0 +1,40 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@RawData =
+    SELECT [Id],
+           [Type],
+           [Claims]
+    FROM WikidataImport
+    WHERE Type == "item";
+
+@jsonPathResult =
+    SELECT [Id],
+           JsonFunctions.JsonTuple([Claims], @"$.*[?(@.mainsnak.datavalue.value.entity-type == 'property' && @.mainsnak.snaktype == 'value' && @.mainsnak.datavalue.type == 'wikibase-entityid')].mainsnak") AS JsonPathResultMap
+    FROM @RawData;
+
+@jsonPathResultExploded=
+SELECT 
+     [Id] AS Subj
+     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.property").Values[0] AS Prop
+     ,JsonFunctions.JsonTuple(jpr.msjson,@"$.datavalue.value.id").Values[0] AS Obj
+FROM @jsonPathResult
+CROSS APPLY EXPLODE(JsonPathResultMap) AS jpr(key, msjson);
+
+
+/*
+INSERT INTO SubjPropProp
+SELECT
+    Subj,
+    Prop,
+    Obj
+FROM @jsonPathResultExploded;
+*/
+
+
+//.csv-kent is kiirtam, mert tablabol nem tud felolvasni az Azure Search
+OUTPUT @jsonPathResultExploded
+TO "/wikidata/subjPropProp.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

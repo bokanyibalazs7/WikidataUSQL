@@ -81,7 +81,7 @@ END;
 
 @path = SELECT * FROM WikidataPaths1;
 
-@toexplode = dbo.SimpleRecursion(@path, @founded, 0, 10, @data);
+@toexplode = dbo.SimpleRecursion(@path, @founded, 0, 45, @data);
 //@toexplode = SELECT * FROM @path;
 INSERT INTO WikidataPaths
 SELECT

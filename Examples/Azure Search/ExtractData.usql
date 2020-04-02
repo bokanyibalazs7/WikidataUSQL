@@ -1,0 +1,127 @@
+﻿REFERENCE ASSEMBLY [Newtonsoft.Json];  
+REFERENCE ASSEMBLY [Microsoft.Analytics.Samples.Formats];
+
+USING Microsoft.Analytics.Samples.Formats.Json;
+
+@RawData =
+    SELECT [Id],
+           [Labels],
+           [Descriptions],
+           [Aliases]
+    FROM WikidataImport;
+
+
+@jsonPathResult =
+    SELECT [Id],
+           JsonFunctions.JsonTuple([Labels], @"$.en") AS Labels,
+           JsonFunctions.JsonTuple([Descriptions], @"$.en") AS Descriptions,
+           JsonFunctions.JsonTuple([Aliases], @"$.en") AS Aliases
+    FROM @RawData;
+    
+@extractLabels=
+SELECT 
+     [Id]
+     ,(jpr.msjson == null ? null : JsonFunctions.JsonTuple(jpr.msjson,@"$.value").Values[0]) AS Labels
+     ,Descriptions
+     ,Aliases
+FROM @jsonPathResult
+OUTER APPLY EXPLODE(Labels) AS jpr(key, msjson);
+    
+@extractDesc=
+SELECT 
+     Id
+     ,Labels
+     ,(jpr.msjson == null ? null : JsonFunctions.JsonTuple(jpr.msjson,@"$.value").Values[0]) AS Descriptions
+     ,Aliases
+FROM @extractLabels
+OUTER APPLY EXPLODE(Descriptions) AS jpr(key, msjson);
+
+@extractAliases=
+SELECT 
+     Id
+     ,Labels
+     ,Descriptions
+     ,(jpr.msjson == null ? null : JsonFunctions.JsonTuple(jpr.msjson,@"$..value").Values) AS Aliases
+FROM @extractDesc
+OUTER APPLY EXPLODE(Aliases) AS jpr(key, msjson);
+
+
+@count = 
+    SELECT COUNT(DISTINCT Id) AS Rows
+    FROM @jsonPathResult;
+
+
+INSERT INTO en_LabelDescriptionAlias
+SELECT *
+FROM @extractAliases;
+
+OUTPUT @count
+TO "/wikidata/Search/count-initial.csv"
+USING Outputters.Csv(outputHeader:true);
+
+
+/*
+@data = SELECT * FROM en_LabelDescriptionAlias;
+
+@explode = 
+    SELECT 
+        Id,
+        r.Value AS Alias
+    FROM @data
+         CROSS APPLY
+         EXPLODE(Aliases) AS r(Value);
+
+@aggregate = 
+    SELECT 
+        Id,
+        string.Join(" ", ARRAY_AGG(Alias)) AS Aliases
+    FROM @explode
+    GROUP BY Id;
+
+
+//valamiert hozzaad fantom oszlopokat, amikben azt jelzi, volt-e az adott sorban vesszo
+//kitorlom a vesszoket, igy nem lesznek oszlopok
+//de ebben az esetben fenn all a veszelye, hogy pl. state,NYC -bol stateNYC lesz, es info veszhet el
+//space-re csereljem? mikor jarunk jobban?
+
+@join =
+    SELECT d.Id,
+           d.Labels.Replace(","," ").Replace("\"","") AS Labels,
+           d.Descriptions.Replace(","," ").Replace("\"","") AS Descriptions,
+           a.Aliases.Replace(","," ").Replace("\"","") AS Aliases
+    FROM @data AS d
+         INNER JOIN
+         (
+         SELECT Id,
+                Aliases
+         FROM @aggregate
+               ) AS a
+         ON d.Id == a.Id;
+
+*/
+/*
+@join =
+    SELECT d.Id,
+           d.Labels,
+           d.Descriptions.Replace("\"\"", "\"") AS Descriptions,
+           a.Aliases
+    FROM @data AS d
+         INNER JOIN
+         (
+         SELECT Id,
+                Aliases
+         FROM @aggregate
+               ) AS a
+         ON d.Id == a.Id;
+
+
+
+//.csv-be nem lehet SqlArray-t irni
+//megoldas lehet az elemek egy stringge osszefuzese, abban meg keresni is lehet
+
+OUTPUT @join
+TO "/wikidata/Search/tesztek/en-LabDescAlias-teszt.csv"//"wasb://bb-search-testing@wikidatajsondump.core.windows.net/tesztek/en-LabDescAlias-teszt.csv"
+USING Outputters.Csv(outputHeader:true);
+//"wasb://bb-search-testing@wikidatajsondump.core.windows.net/tesztek/en-LabDescAlias-teszt.csv"
+
+*/

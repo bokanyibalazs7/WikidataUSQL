@@ -1,0 +1,85 @@
+﻿@subjPropObj=
+    SELECT
+        Subj,
+        Prop,
+        Obj
+    FROM SubjPropObj;
+
+//taxonomiai tipusok - van subclass of-ja
+@allTypes=
+    SELECT DISTINCT Subj
+    FROM @subjPropObj
+    WHERE Prop == "P279";
+
+//hivatkozott tipusok - mutat ra instance of allitas
+@typesWithInstance=
+    SELECT DISTINCT Obj
+    FROM @subjPropObj
+    WHERE Prop == "P31";
+
+//valodi tipus: hivatkozott es taxonomiai is
+@realTypes=
+    SELECT Subj AS Obj FROM @allTypes
+    INTERSECT DISTINCT
+    SELECT * FROM @typesWithInstance;
+
+//peldany: van instance of , de nincs subclass of allitasa
+//megkeressuk azokat a sorokat, amik peldany-p31-valodi_tipus formaban vannak
+//peldanyokhoz kell: nincs subclass of-ja
+//ezt legegyszerubben: osszes - van
+@van = 
+    SELECT DISTINCT Subj FROM @subjPropObj
+    WHERE Prop == "P279";
+
+@nincs_subclass = 
+    SELECT DISTINCT Subj FROM @subjPropObj
+    EXCEPT
+    SELECT * FROM @van;
+
+//subjPropObj-et eloszor leszurjuk a valodi tipusokra
+//itt mar szurunk arra is, hogy csak instance of allitasaink legyenek
+@valodira_mutato_allitasok = 
+    SELECT s.Subj, s.Prop, s.Obj FROM @subjPropObj AS s
+                                INNER JOIN (SELECT Obj FROM @realTypes) AS r
+                                ON s.Obj == r.Obj
+    WHERE s.Prop == "P31";
+
+//aztan meghagyjuk azokat, akiknek nincsen subclass of-ja
+@filtered = 
+    SELECT v.Subj, v.Prop, v.Obj FROM @valodira_mutato_allitasok AS v
+                  INNER JOIN (SELECT Subj FROM @nincs_subclass) AS n
+                  ON v.Subj == n.Subj;
+
+
+//csinalunk ra egy group by-t
+//Same oszlop a medianhoz kell
+@countOccurances = 
+    SELECT Obj, COUNT() AS Occurance, 1 AS Same
+    FROM @filtered
+         GROUP BY Obj;
+
+@jellemzok = 
+    SELECT MAX(Occurance) AS Maximum, MIN(Occurance) AS Minimum, AVG(Occurance) AS Average, STDEV(Occurance) AS Spread
+    FROM @countOccurances;
+
+@median = 
+    SELECT DISTINCT Same, PERCENTILE_DISC(0.5) WITHIN GROUP(ORDER BY Occurance) OVER(PARTITION BY Same) AS Median
+    FROM @countOccurances;
+
+
+//Little filter to find which subject has the most instance
+/*
+@maxobject = 
+    SELECT Subj
+    FROM @countOccurances
+    WHERE Occurance == 22641732;
+*/
+
+
+OUTPUT @jellemzok
+TO "/wikidata/valodi-tipusok-peldanyai-AVG-MIN-MAX-STDEV.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);
+
+OUTPUT @median
+TO "/wikidata/valodi-tipusok-peldanyai-MEDIAN.csv"
+USING Outputters.Csv(outputHeader:true,quoting:true);

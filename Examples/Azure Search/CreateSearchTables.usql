@@ -1,0 +1,28 @@
+﻿//Tables created for Azure Search
+
+
+//English Label, Description and Alias array for all types of Items
+DROP TABLE IF EXISTS dbo.en_LabelDescriptionAlias;
+CREATE TABLE dbo.en_LabelDescriptionAlias
+(
+    [Id] string
+    ,[Labels] string
+    ,[Descriptions] string
+    ,[Aliases] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(Id ASC) DISTRIBUTED BY HASH(Id)
+);
+
+
+
+
+/*
+DROP TABLE IF EXISTS dbo.testtable2;
+CREATE TABLE dbo.testtable2
+(
+    [Id] string
+    ,[Labels] string
+    ,[Descriptions] SqlMap<string,string>
+    ,[Aliases] SqlMap<string,string>
+    ,INDEX cIX_ID CLUSTERED(Id ASC) DISTRIBUTED BY HASH(Id)
+);
+*/

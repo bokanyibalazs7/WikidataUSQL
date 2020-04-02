@@ -1,0 +1,109 @@
+﻿//WikidataImport table creation
+/*
+CREATE TABLE dbo.WikidataImport  
+(
+     [Id] string
+    ,[Type] string
+    ,[Labels] byte[]
+    ,[Descriptions] byte[]
+    ,[Aliases] byte[]
+    ,[Claims] byte[]
+    ,[Sitelinks] byte[]
+    ,INDEX cIX_ID CLUSTERED(Id ASC) DISTRIBUTED BY HASH(Id)
+);
+*/
+
+//SubjPropObj table creation
+/*
+CREATE TABLE dbo.SubjPropObj  
+(
+     [Subj] string
+    ,[Prop] string
+    ,[Obj] string
+    ,INDEX cIX_ID CLUSTERED(Subj ASC) DISTRIBUTED BY HASH(Subj)
+);
+*/
+/*
+DROP TABLE IF EXISTS dbo.WikidataPaths;
+CREATE TABLE dbo.WikidataPaths
+( 
+     [LastElement] string
+    ,[CircleFlag] bool
+    ,[Paths] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(LastElement ASC) DISTRIBUTED BY HASH(LastElement)
+);
+*/
+/*
+DROP TABLE IF EXISTS dbo.TaxTypesAndProperties2;
+CREATE TABLE dbo.TaxTypesAndProperties2  
+(
+    [Obj] string
+    ,[Prop] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(Obj ASC) DISTRIBUTED BY HASH(Obj)
+);
+*/
+
+/*
+CREATE TABLE dbo.SubjPropProp  
+(
+     [Subj] string
+    ,[Prop] string
+    ,[Obj] string
+    ,INDEX cIX_ID CLUSTERED(Subj ASC) DISTRIBUTED BY HASH(Subj)
+);
+*/
+/*
+CREATE TABLE dbo.PropPropSubj  
+(
+     [Subj] string
+    ,[Prop] string
+    ,[Obj] string
+    ,INDEX cIX_ID CLUSTERED(Subj ASC) DISTRIBUTED BY HASH(Subj)
+);
+*/
+
+
+/*
+
+/*
+DROP TABLE IF EXISTS dbo.PropertiesWithQualifiers;
+CREATE TABLE dbo.PropertiesWithQualifiers
+(
+    [Id] string
+    ,[PropConstraint] string
+    ,[ValueTypeConstraint] string
+    ,[Class] string
+    ,[QualifierValues] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(Id ASC) DISTRIBUTED BY HASH(Id)
+);
+*/
+
+
+/*
+DROP TABLE IF EXISTS dbo.TaxTypesAndPropertiesByScheme;
+CREATE TABLE dbo.TaxTypesAndPropertiesByScheme
+(
+    [Subject] string
+    ,[Properties] SqlArray<string>
+    ,INDEX cIX_ID CLUSTERED(Subject ASC) DISTRIBUTED BY HASH(Subject)
+);
+*/
+
+/*
+DROP TABLE IF EXISTS dbo.PropsBySchemeWithParents;
+CREATE TABLE dbo.PropsBySchemeWithParents
+(
+    [Item] string
+    ,[Properties] [System.Int64?]
+    ,INDEX cIX_ID CLUSTERED(Item ASC) DISTRIBUTED BY HASH(Item)
+);
+*/
+
+
+DROP TABLE IF EXISTS dbo.PropsByInstancesWithParents;
+CREATE TABLE dbo.PropsByInstancesWithParents
+(
+    [Item] string
+    ,[Properties] [System.Int64?]
+    ,INDEX cIX_ID CLUSTERED(Item ASC) DISTRIBUTED BY HASH(Item)
+);
